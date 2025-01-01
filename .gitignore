@@ -1,0 +1,14 @@
+final_data = {
+        'Website': [website],
+        'Email/Username': [email],
+        'Password': [password]
+    }
+    final = pd.DataFrame(final_data)
+    
+    try:
+        with open('data.csv', 'r') as f:
+            header = False 
+    except FileNotFoundError:
+        header = True  
+    
+    final.to_csv('data.csv', mode='a', index=False, header=header)
