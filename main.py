@@ -1,8 +1,29 @@
 import tkinter
 from tkinter import ttk, END, messagebox
-import pandas as pd
 import random
 import pyperclip
+import json
+# ---------------------------- SEARCH FUNCTION ------------------------------- #
+def search():
+    website = website_entry.get().strip()
+    if not website:
+        messagebox.showinfo(title='Oops', message='Dont leave the field empty!')
+    else:
+        try:
+            with open('./data.json', 'r') as data_file:
+                try:
+                    data=json.load(data_file)
+                except json.JSONDecodeError:
+                    messagebox.showinfo(title='Oops', message='No such website stored!')
+                else:
+                    if website in data:
+                        display_email=data[website]['email']
+                        display_password=data[website]['password']
+                        messagebox.showinfo(title=website, message=f'Email: {display_email}\n Password: {display_password}')
+                    else:
+                        messagebox.showinfo(title='Oops', message='No such website stored!')
+        except FileNotFoundError:
+            messagebox.showinfo(title='Oops', message='No such website stored!')
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 def generate():
     letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
@@ -23,38 +44,39 @@ def generate():
 
     password_entry.delete(0, END)
     password_entry.insert(0, gen_password)
-    pyperclip.copy(password_entry)
+    pyperclip.copy(gen_password)
 # ---------------------------- SAVE PASSWORD ------------------------------- #
 def save_data():
     website = website_entry.get().strip()
     email = email_combobox.get().strip()
     password = password_entry.get().strip()
-    
+    new_data={
+        website:{
+            "email":email,
+            'password':password
+        }
+    }
+
     if not website or not email or not password:
         messagebox.showinfo(title='Oops', message='Dont leave any fields empty!')
-        return
-    
-    is_ok=messagebox.askokcancel(title=website, message=f"These are the details entered:\nEmail: {email}\nPassword: {password}\n Do you want to save this data?")
-
-    if is_ok:
-        final_data = {
-        'Website': [website],
-        'Email/Username': [email],
-        'Password': [password]
-        }
-        final = pd.DataFrame(final_data)
-        
+    else:
         try:
-            with open('data.csv', 'r') as f:
-                header = False 
+            with open('./data.json', 'r') as data_file:
+                try:
+                    data=json.load(data_file)
+                except json.JSONDecodeError:
+                    data={}
         except FileNotFoundError:
-            header = True  
-        
-        final.to_csv('data.csv', mode='a', index=False, header=header)
-    
-    website_entry.delete(0, END)
-    email_combobox.set('rajmall.0206@gmail.com')
-    password_entry.delete(0, END)
+            with open('./data.json', 'w') as data_file:
+                json.dump(new_data, data_file, indent=4)
+        else:
+            data.update(new_data) 
+            with open('./data.json', 'w') as data_file:
+                json.dump(data, data_file, indent=4)
+        finally:
+            website_entry.delete(0, END)
+            email_combobox.set('rajmall.0206@gmail.com')
+            password_entry.delete(0, END)
     
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -69,14 +91,17 @@ canvas.grid(column=1, row=0)
 
 website_label=tkinter.Label(text='Website: ', pady=5)
 website_label.grid(column=0, row=1)
-website_entry=tkinter.Entry(width=35)
+website_entry=tkinter.Entry(width=21)
 website_entry.focus()
-website_entry.grid(column=1, row=1, columnspan=2)
+website_entry.grid(column=1, row=1, columnspan=1)
+
+search_button=tkinter.Button(text='Search', width=12, command=search, pady=1)
+search_button.grid(column=2,row=1)
 
 email_options=['rajmall.0206@gmail.com', 'raj282bss@gmail.com']
-email_label=tkinter.Label(text='Email/Username: ', pady=5)
+email_label=tkinter.Label(text='Email/Username:', pady=5)
 email_label.grid(column=0, row=2)
-email_combobox =ttk.Combobox(window, values=email_options, width=34)
+email_combobox =ttk.Combobox(window, values=email_options, width=36)
 email_combobox.set(email_options[0]) 
 email_combobox.grid(column=1, row=2, columnspan=2)
 
@@ -84,8 +109,9 @@ password_label=tkinter.Label(text='Password: ',pady=5)
 password_label.grid(column=0, row=3)
 password_entry=tkinter.Entry(width=21)
 password_entry.grid(column=1, row=3)
-generate_button=tkinter.Button(text='Generate Password', pady=1, padx=1, command=generate)
+generate_button = tkinter.Button(text='Generate Password', width=13, pady=1, command=generate)
 generate_button.grid(column=2, row=3)
+
 
 add_button=tkinter.Button(text="Add", width=36, command=save_data)
 add_button.grid(column=1, row=4, columnspan=2)
