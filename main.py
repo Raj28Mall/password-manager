@@ -1,8 +1,29 @@
 import tkinter
 from tkinter import ttk, END, messagebox
 import pandas as pd
+import random
+import pyperclip
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
+def generate():
+    letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+    numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+    symbols = ['!', '#', '$', '%', '&', '(', ')', '*', '+']
 
+    nr_letters = random.randint(8, 10)
+    nr_symbols = random.randint(2, 4)
+    nr_numbers = random.randint(2, 4)
+
+    p1=[random.choice(letters) for _ in range(nr_letters)]
+    p2=[random.choice(symbols) for _ in range(nr_symbols)]
+    p3=[random.choice(numbers) for _ in range(nr_numbers)]
+    password_list=p1+p2+p3
+    random.shuffle(password_list)
+
+    gen_password = "".join(password_list)
+
+    password_entry.delete(0, END)
+    password_entry.insert(0, gen_password)
+    pyperclip.copy(password_entry)
 # ---------------------------- SAVE PASSWORD ------------------------------- #
 def save_data():
     website = website_entry.get().strip()
@@ -10,7 +31,7 @@ def save_data():
     password = password_entry.get().strip()
     
     if not website or not email or not password:
-        messagebox.showinfo(title='Error', message='Dont leave any information empty!')
+        messagebox.showinfo(title='Oops', message='Dont leave any fields empty!')
         return
     
     is_ok=messagebox.askokcancel(title=website, message=f"These are the details entered:\nEmail: {email}\nPassword: {password}\n Do you want to save this data?")
@@ -34,7 +55,7 @@ def save_data():
     website_entry.delete(0, END)
     email_combobox.set('rajmall.0206@gmail.com')
     password_entry.delete(0, END)
-
+    
 
 # ---------------------------- UI SETUP ------------------------------- #
 window=tkinter.Tk()
@@ -63,7 +84,7 @@ password_label=tkinter.Label(text='Password: ',pady=5)
 password_label.grid(column=0, row=3)
 password_entry=tkinter.Entry(width=21)
 password_entry.grid(column=1, row=3)
-generate_button=tkinter.Button(text='Generate Password', pady=1, padx=1)
+generate_button=tkinter.Button(text='Generate Password', pady=1, padx=1, command=generate)
 generate_button.grid(column=2, row=3)
 
 add_button=tkinter.Button(text="Add", width=36, command=save_data)
